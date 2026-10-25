@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#18212b">
+<title>RIDE OS</title>
+<style>
+:root{--glass:rgba(222,228,234,.34);--glass2:rgba(222,228,234,.47);--line:rgba(255,255,255,.54);--ink:#fff;--muted:rgba(255,255,255,.82);--radius:23px;--gap:12px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#18212b;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#background{position:fixed;inset:0;z-index:0;background:linear-gradient(135deg,#526b76,#243640 55%,#6b806f);background-size:cover;background-position:center;transition:background-image .5s}
+#shade{position:fixed;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,0,0,.08) 45%,rgba(0,0,0,.38));pointer-events:none}
+#app{position:relative;z-index:2;height:100%;min-height:0;display:flex;flex-direction:column;padding:clamp(9px,1.8vw,20px);gap:clamp(7px,1.2vh,12px)}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;text-shadow:0 2px 12px #0007}
+.brand{font-weight:900;letter-spacing:.18em;font-size:clamp(14px,2vw,22px)}
+.header-right{display:flex;align-items:center;gap:8px}.status{font-size:clamp(10px,1.25vw,13px);color:var(--muted);white-space:nowrap}
+button,.file-label{border:1px solid var(--line);background:rgba(25,31,37,.42);color:white;border-radius:999px;padding:8px 11px;font-size:clamp(10px,1.2vw,12px);font-weight:750;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer;white-space:nowrap}
+button.active{background:rgba(244,247,250,.92);color:#202832;border-color:#fff}
+#layout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap);flex:1;min-height:0}
+#layout.mode-1{grid-template-columns:minmax(0,1fr)}
+#layout.mode-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.panel{min-width:0;min-height:0;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius);background:var(--glass);box-shadow:0 10px 34px #0003;backdrop-filter:blur(17px) saturate(130%);-webkit-backdrop-filter:blur(17px) saturate(130%);display:flex;flex-direction:column;padding:clamp(10px,1.8vw,20px);position:relative;transition:background .2s}
+.panel:before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.15),transparent 48%);pointer-events:none}
+.panel.drop-target{outline:3px solid #fff;outline-offset:-5px;background:var(--glass2)}
+.panel-top{display:flex;align-items:center;justify-content:space-between;gap:6px;position:relative;z-index:1}
+.appname{font-size:clamp(10px,1.5vw,14px);font-weight:850;letter-spacing:.1em;text-transform:uppercase}
+.panel-icon{font-size:clamp(18px,2.8vw,28px);line-height:1}
+.content{position:relative;z-index:1;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;text-align:center;flex-direction:column;gap:clamp(5px,1vh,10px)}
+.big-speed{font-size:clamp(42px,9vw,108px);font-weight:850;letter-spacing:-.07em;line-height:.94;font-variant-numeric:tabular-nums;text-shadow:0 3px 18px #0003}
+.unit{font-size:clamp(11px,1.7vw,17px);font-weight:800;letter-spacing:.15em}
+.small{font-size:clamp(10px,1.3vw,13px);color:var(--muted)}
+.action{border:1px solid rgba(255,255,255,.6);background:rgba(20,25,30,.38);border-radius:14px;padding:10px 14px;color:white;font-weight:800;text-decoration:none;font-size:clamp(11px,1.4vw,14px);display:inline-block}
+.placeholder{font-size:clamp(12px,1.6vw,16px);color:rgba(255,255,255,.94);max-width:25ch;line-height:1.4}
+.album{width:clamp(43px,7vw,80px);height:clamp(43px,7vw,80px);border-radius:50%;border:2px solid #ffffffb5;background:radial-gradient(circle,#edf1f3 0 7%,#47525c 8% 22%,#10171d 23% 30%,#aab3ba 31% 34%,#263039 35%);box-shadow:0 6px 20px #0004}
+#dock{display:flex;align-items:stretch;gap:clamp(4px,.8vw,9px);padding:clamp(5px,.9vw,9px);border:1px solid var(--line);border-radius:22px;background:rgba(218,225,231,.36);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);box-shadow:0 10px 30px #0003;flex-shrink:0;min-height:clamp(54px,10vh,80px)}
+.dock-app{flex:1;min-width:0;border:1px solid transparent;border-radius:15px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;background:rgba(18,24,30,.25);color:white;font-size:clamp(9px,1.25vw,12px);font-weight:750;cursor:grab;user-select:none;touch-action:manipulation}
+.dock-app:active,.dock-app.selected{background:rgba(255,255,255,.28);border-color:#ffffffa0}
+.dock-icon{font-size:clamp(18px,2.7vw,26px);line-height:1}
+.bottomline{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0}
+.hint{font-size:10px;color:#ffffffcf;text-shadow:0 1px 8px #000}
+#photoInput{display:none}.hidden{display:none!important}
+@media (orientation:portrait){
+ #app{padding:8px;gap:7px}
+ header{flex-wrap:wrap}.brand{font-size:14px}
+ #layout{grid-template-columns:1fr;grid-template-rows:repeat(3,minmax(0,1fr))}
+ #layout.mode-1{grid-template-rows:minmax(0,1fr)}
+ #layout.mode-2{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(0,1fr)}
+ .panel{border-radius:17px;padding:9px}
+ .big-speed{font-size:clamp(35px,8vw,70px)}
+ #dock{min-height:54px;border-radius:17px}
+ .dock-app{gap:2px}
+ .hint{display:none}
+}
+</style>
+</head>
+<body>
+<div id="background"></div><div id="shade"></div>
+<main id="app">
+ <header>
+  <div class="brand">RIDE OS</div>
+  <div class="header-right">
+   <div class="status"><span id="clock">--:--</span> · <span id="gpsStatus">GPS waiting</span></div>
+   <button id="photoBtn" type="button">＋ Photos</button>
+   <button id="shuffleBtn" type="button" title="Shuffle selected photos">⤨ Shuffle</button>
+  </div>
+ </header>
+ <section id="layout" class="mode-3" aria-label="Dashboard panels">
+  <article class="panel" data-slot="0" tabindex="0">
+   <div class="panel-top"><span class="appname">Maps</span><span class="panel-icon">⌖</span></div>
+   <div class="content"><div class="panel-icon" style="font-size:clamp(30px,5vw,54px)">🗺️</div><div class="placeholder">Navigation</div><a class="action" href="https://maps.apple.com/" target="_blank" rel="noopener">Open Maps ↗</a></div>
+  </article>
+  <article class="panel" data-slot="1" tabindex="0">
+   <div class="panel-top"><span class="appname">Speed</span><span class="panel-icon">◉</span></div>
+   <div class="content"><div class="big-speed" id="speed">--</div><div class="unit" id="unit">KM/H</div><div class="small" id="trip">Trip 0.00 km</div><button id="unitsBtn" type="button">Switch to MPH</button></div>
+  </article>
+  <article class="panel" data-slot="2" tabindex="0">
+   <div class="panel-top"><span class="appname">Music</span><span class="panel-icon">♫</span></div>
+   <div class="content"><div class="album"></div><div class="placeholder">Your music</div><a class="action" href="https://open.spotify.com/" target="_blank" rel="noopener">Open Spotify ↗</a></div>
+  </article>
+ </section>
+ <nav id="dock" aria-label="App dock">
+  <button class="dock-app" draggable="true" data-app="Maps"><span class="dock-icon">⌖</span><span>Maps</span></button>
+  <button class="dock-app" draggable="true" data-app="Speed"><span class="dock-icon">◉</span><span>Speed</span></button>
+  <button class="dock-app" draggable="true" data-app="Music"><span class="dock-icon">♫</span><span>Music</span></button>
+  <button class="dock-app" draggable="true" data-app="Phone"><span class="dock-icon">☎</span><span>Phone</span></button>
+  <button class="dock-app" draggable="true" data-app="Messages"><span class="dock-icon">✉</span><span>Messages</span></button>
+ </nav>
+ <div class="bottomline">
+  <div class="controls">
+   <button class="active" data-mode="1" type="button">1 panel</button>
+   <button data-mode="2" type="button">2 panels</button>
+   <button data-mode="3" type="button">3 panels</button>
+  </div>
+  <div class="hint">Tap an app, then tap a panel · choose photos for your background</div>
+  <button id="settingsBtn" type="button">⚙ Settings</button>
+ </div>
+</main>
+<input id="photoInput" type="file" accept="image/*" multiple>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let photos=[], photoIndex=-1, chosenApp=null, mode=3, mph=false, watchId=null, lastPos=null, tripKm=0, topSpeed=0;
+const appDetails={
+ Maps:{icon:'🗺️',body:'<div class="panel-icon" style="font-size:clamp(30px,5vw,54px)">🗺️</div><div class="placeholder">Navigation</div><a class="action" href="https://maps.apple.com/" target="_blank" rel="noopener">Open Maps ↗</a>'},
+ Speed:{icon:'◉',body:'<div class="big-speed" id="speed">--</div><div class="unit" id="unit">KM/H</div><div class="small" id="trip">Trip 0.00 km</div><button id="unitsBtn" type="button">Switch to MPH</button>'},
+ Music:{icon:'♫',body:'<div class="album"></div><div class="placeholder">Your music</div><a class="action" href="https://open.spotify.com/" target="_blank" rel="noopener">Open Spotify ↗</a>'},
+ Phone:{icon:'☎',body:'<div class="panel-icon" style="font-size:clamp(30px,5vw,54px)">☎</div><div class="placeholder">Call from your phone</div><a class="action" href="tel:">Open Phone ↗</a>'},
+ Messages:{icon:'✉',body:'<div class="panel-icon" style="font-size:clamp(30px,5vw,54px)">✉</div><div class="placeholder">Messages</div><a class="action" href="sms:">Open Messages ↗</a>'}
+};
+function renderApp(panel,name){let d=appDetails[name]||appDetails.Maps;panel.dataset.app=name;panel.querySelector('.appname').textContent=name;panel.querySelector('.panel-icon').textContent=d.icon;panel.querySelector('.content').innerHTML=d.body;panel.querySelector('.content').querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{}));}
+function setMode(n){mode=n;let layout=$('#layout');layout.className='mode-'+n;$$('[data-mode]').forEach(b=>b.classList.toggle('active',+b.dataset.mode===n));let panels=$$('.panel');panels.forEach((p,i)=>p.classList.toggle('hidden',i>=n));}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(+b.dataset.mode)));
+$$('.dock-app').forEach(b=>{
+ b.addEventListener('click',()=>{chosenApp=b.dataset.app;$$('.dock-app').forEach(x=>x.classList.toggle('selected',x===b));$$('.panel').forEach(p=>p.style.outline='');});
+ b.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',b.dataset.app);chosenApp=b.dataset.app;});
+});
+$$('.panel').forEach(p=>{
+ p.addEventListener('click',e=>{if(e.target.closest('a,button'))return;if(chosenApp){renderApp(p,chosenApp);chosenApp=null;$$('.dock-app').forEach(x=>x.classList.remove('selected'));}});
+ p.addEventListener('dragover',e=>{e.preventDefault();p.classList.add('drop-target')});
+ p.addEventListener('dragleave',()=>p.classList.remove('drop-target'));
+ p.addEventListener('drop',e=>{e.preventDefault();p.classList.remove('drop-target');let name=e.dataTransfer.getData('text/plain');if(name)renderApp(p,name)});
+});
+$('#photoBtn').addEventListener('click',()=>$('#photoInput').click());
+$('#photoInput').addEventListener('change',e=>{
+ photos.forEach(p=>URL.revokeObjectURL(p.url));photos=[...e.target.files].filter(f=>f.type.startsWith('image/')).map(file=>({url:URL.createObjectURL(file),name:file.name}));
+ if(photos.length){photoIndex=-1;shufflePhoto();if(photos.length>1)$('#shuffleBtn').textContent='⤨ Shuffle ('+photos.length+')';}
+});
+function shufflePhoto(){if(!photos.length){alert('First tap + Photos and select some pictures from your iPhone.');return;}let next=photoIndex;if(photos.length>1){while(next===photoIndex)next=Math.floor(Math.random()*photos.length)}else next=0;photoIndex=next;$('#background').style.backgroundImage='url("'+photos[next].url+'")';}
+$('#shuffleBtn').addEventListener('click',shufflePhoto);
+$('#unitsBtn').addEventListener('click',()=>{mph=!mph;$('#unit').textContent=mph?'MPH':'KM/H';$('#unitsBtn').textContent=mph?'Switch to KM/H':'Switch to MPH';});
+function updateSpeed(kmh){const v=mph?kmh*.621371:kmh;const s=$('#speed');if(s)s.textContent=Number.isFinite(v)?Math.round(v):'--';const t=$('#trip');if(t)t.textContent='Trip '+(tripKm*(mph?.621371:1)).toFixed(2)+(mph?' mi':' km');}
+if('geolocation' in navigator){watchId=navigator.geolocation.watchPosition(pos=>{const c=pos.coords;$('#gpsStatus').textContent='GPS active';if(c.speed!==null&&c.speed>=0){const kmh=c.speed*3.6;topSpeed=Math.max(topSpeed,kmh);updateSpeed(kmh)}else $('#speed').textContent='0';if(lastPos){const R=6371,toRad=x=>x*Math.PI/180,dl=(c.latitude-lastPos.lat)*toRad,do_=(c.longitude-lastPos.lon)*toRad,a=Math.sin(dl/2)**2+Math.cos(lastPos.lat*toRad)*Math.cos(c.latitude*toRad)*Math.sin(do_/2)**2;tripKm+=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}lastPos={lat:c.latitude,lon:c.longitude};const t=$('#trip');if(t)t.textContent='Trip '+(tripKm*(mph?.621371:1)).toFixed(2)+(mph?' mi':' km');},()=>{$('#gpsStatus').textContent='GPS permission needed';},{enableHighAccuracy:true,maximumAge:1000,timeout:10000});}else $('#gpsStatus').textContent='GPS unavailable';
+function clock(){const d=new Date();$('#clock').textContent=d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});}clock();setInterval(clock,15000);
+$('#settingsBtn').addEventListener('click',()=>{const opacity=prompt('Panel transparency: enter a number from 15 (more see-through) to 70 (more solid).', '34');if(opacity===null)return;let n=Number(opacity);if(!Number.isFinite(n))return;n=Math.max(15,Math.min(70,n));document.documentElement.style.setProperty('--glass','rgba(222,228,234,'+(n/100)+')');const radius=prompt('Panel corner roundness in pixels (12–36).','23');if(radius!==null&&Number.isFinite(Number(radius)))document.documentElement.style.setProperty('--radius',Math.max(12,Math.min(36,Number(radius)))+'px');});
+setMode(3);
+</script>
+</body>
+</html>
